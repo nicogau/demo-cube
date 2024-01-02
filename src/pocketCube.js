@@ -1,11 +1,24 @@
-import {startAnimation, stopAnimation} from  './index.js'
+import PocketCube from './index.js';
+
+const images = [
+  '1.png',
+  '2.png',
+  '3.png',
+  '4.png',
+  '5.png',
+  '6.png'
+];
+
+const pocketCube = new PocketCube(undefined, '../assets/cube/', images );
+pocketCube.init();
+console.log(pocketCube);
 
 const btnStart = document.getElementById("btn-start");
 const btnStop = document.getElementById("btn-stop");
 
 btnStart.addEventListener('click', function() {
-  startAnimation(); 
+  pocketCube.startAnimation(); 
 })
 btnStop.addEventListener('click', function() {
-  stopAnimation(); 
+  pocketCube.stopAnimation(); 
 })

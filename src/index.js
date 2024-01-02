@@ -1,71 +1,71 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-const width = window.innerWidth;
-const height = window.innerHeight;
+// const width = window.innerWidth;
+// const height = window.innerHeight;
 
 // init
+let camera;
+let renderer;
+let scene;
+let mesh;
+let controls;
 
-const camera = new THREE.PerspectiveCamera( 70, width / height, 0.01, 10 );
-camera.position.z = 1;
+export default class PocketCube {
 
-const scene = new THREE.Scene();
+  constructor(container, path, images) {
+    this.container = container ?? document.body;
+    // todo: a changer
+    this.containerWidth = window.innerWidth 
+    this.containerHeight = window.innerHeight 
+    this.path = path;
+    this.images = images;
+  }
 
-const geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-// const loader = new THREE.CubeTextureLoader();
-const loader = new THREE
-  .TextureLoader()
-  .setPath('../assets/cube/')
-;
+  init() {
+    camera = new THREE.PerspectiveCamera( 70, this.containerWidth / this.containerHeight, 0.01, 10 );
+    camera.position.z = 1;
 
-const images = [
-  '1.png',
-  '2.png',
-  '3.png',
-  '4.png',
-  '5.png',
-  '6.png'
-];
+    scene = new THREE.Scene();
 
-// creation des textures
-const cubeTextures = images.map(image => loader.load(image));
-// creation des materials
-const cubeMaterials = cubeTextures.map(texture => new THREE.MeshBasicMaterial({map: texture}));
-// on applique le materials sur le cube
-const mesh = new THREE.Mesh( geometry, cubeMaterials );
+    const geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
 
-scene.add( mesh );
-const renderer = new THREE.WebGLRenderer( { antialias: true } );
-renderer.setSize( width, height );
+    const loader = new THREE
+      .TextureLoader()
+      .setPath(this.path ?? "./")
+    ;
+    // creation des textures
+    const cubeTextures = this.images.map(image => loader.load(image));
+    // creation des materials
+    const cubeMaterials = cubeTextures.map(texture => new THREE.MeshBasicMaterial({map: texture}));
+    // on applique le materials sur le cube
+    mesh = new THREE.Mesh( geometry, cubeMaterials );
 
-document.body.appendChild( renderer.domElement );
+    scene.add( mesh );
+    renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.setSize( this.containerWidth, this.containerHeight );
 
-const controls = new OrbitControls( camera, renderer.domElement );
-controls.update();
+    this.container.appendChild( renderer.domElement );
 
-// par défaut le cube est animé
-startAnimation();
+    controls = new OrbitControls( camera, renderer.domElement );
+    controls.update();
 
-function infiniteRotateAnimation( time ) {
-	mesh.rotation.x = time / 2000;
-	mesh.rotation.y = time / 1000;
+    // par défaut le cube est animé
+    this.startAnimation();
+  }
 
-  controls.update();
+  startAnimation(){
+    renderer.setAnimationLoop( function(time) {
+      mesh.rotation.x = time / 2000;
+      mesh.rotation.y = time / 1000;
+      controls.update();
+      renderer.render( scene, camera );
+    } );
+  }
 
-	renderer.render( scene, camera );
-}
-
-function noRotateAnimation() {
-  controls.update();
-	renderer.render( scene, camera );
-}
-
-
-export function stopAnimation(){
-  renderer.setAnimationLoop( noRotateAnimation );
-  controls.update();
-	renderer.render( scene, camera );
-}
-export function startAnimation(){
-  renderer.setAnimationLoop( infiniteRotateAnimation );
-	renderer.render( scene, camera );
+  stopAnimation(){
+    renderer.setAnimationLoop( function() {
+      controls.update();
+      renderer.render( scene, camera );
+    } );
+  }
 }
