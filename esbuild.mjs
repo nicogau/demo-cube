@@ -1,7 +1,10 @@
 import * as esbuild from 'esbuild';
 
 await esbuild.build({
-  entryPoints: ['src/pocketCube.js'],
+  entryPoints: {
+    'index': 'src/index.js',
+    'style': 'assets/style.css'
+  },
   bundle: true,
   minify: true,
   /*
