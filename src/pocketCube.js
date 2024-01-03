@@ -1,31 +1,60 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-// const width = window.innerWidth;
-// const height = window.innerHeight;
 
-// init
-let camera;
-let renderer;
-let scene;
-let mesh;
-let controls;
 
-export default class PocketCube {
+/**
+  * Un pocket cube
+  * @constructor
+  */
+export default function PocketCube() {
+  this.camera = null;
+  this.renderer = null;
+  this.scene = null;
+  this.mesh = null;
+  this.controls = null;
 
-  constructor(container, path, images) {
-    this.container = container ?? document.body;
-    // todo: a changer
-    this.containerWidth = window.innerWidth 
-    this.containerHeight = window.innerHeight 
-    this.path = path;
-    this.images = images;
-  }
+  this.container = document.body;
+  this.containerWidth = window.innerWidth 
+  this.containerHeight = window.innerHeight 
+  this.path = null;
+  this.images = null;
+}
 
-  init() {
-    camera = new THREE.PerspectiveCamera( 70, this.containerWidth / this.containerHeight, 0.01, 10 );
-    camera.position.z = 1;
+/**
+  * définit le noeud DOM où le cube sera inséré  
+  * @description si le container est omis  document.body sera utilisé
+  * @memberof PocketCube
+  * @param {Element} container
+  */
+PocketCube.prototype.setContainer = function(container) {
+  this.container = container
+  this.containerWidth = container?.getBoundingClientRect().width;
+  this.containerHeight = container?.getBoundingClientRect().height;
+};
 
-    scene = new THREE.Scene();
+/**
+  * définit le chemin d'accès au dossier contenant les images
+  * @memberof PocketCube
+  * @param {string} path
+  */
+PocketCube.prototype.setImagesPath = function(path) {this.path = path};
+
+/**
+  * tableau de 6 images recouvrant la surface du cube 
+  * @memberof PocketCube
+  * @param {Array<string>} images
+  */
+PocketCube.prototype.setImages = function(images) {this.images = images};
+
+/**
+  * initialise le rendu du cube
+  * @memberof PocketCube
+  */
+PocketCube.prototype.init = function() {
+    this.camera = new THREE.PerspectiveCamera( 70, this.containerWidth / this.containerHeight, 0.01, 10 );
+    this.camera.position.z = 1;
+
+    this.scene = new THREE.Scene();
 
     const geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
 
@@ -38,34 +67,42 @@ export default class PocketCube {
     // creation des materials
     const cubeMaterials = cubeTextures.map(texture => new THREE.MeshBasicMaterial({map: texture}));
     // on applique le materials sur le cube
-    mesh = new THREE.Mesh( geometry, cubeMaterials );
+    this.mesh = new THREE.Mesh( geometry, cubeMaterials );
 
-    scene.add( mesh );
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setSize( this.containerWidth, this.containerHeight );
+    this.scene.add( this.mesh );
+    this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+    this.renderer.setSize( this.containerWidth, this.containerHeight );
 
-    this.container.appendChild( renderer.domElement );
+    this.container.appendChild( this.renderer.domElement );
 
-    controls = new OrbitControls( camera, renderer.domElement );
-    controls.update();
+    this.controls = new OrbitControls( this.camera, this.renderer.domElement );
+    this.controls.update();
 
     // par défaut le cube est animé
     this.startAnimation();
+}
+
+/**
+  * lance l'animation du cube
+  * @memberof PocketCube
+  * @description  init() lance automatiquement l'animation du cube 
+  */
+PocketCube.prototype.startAnimation = function(){
+    this.renderer.setAnimationLoop( (time) => {
+      this.mesh.rotation.x = time / 2000;
+      this.mesh.rotation.y = time / 1000;
+      this.controls.update();
+      this.renderer.render( this.scene, this.camera );
+    });
   }
 
-  startAnimation(){
-    renderer.setAnimationLoop( function(time) {
-      mesh.rotation.x = time / 2000;
-      mesh.rotation.y = time / 1000;
-      controls.update();
-      renderer.render( scene, camera );
+/**
+  * met l' animation en pause
+  * @memberof PocketCube
+  */
+PocketCube.prototype.stopAnimation = function(){
+    this.renderer.setAnimationLoop( () => {
+      this.controls.update();
+      this.renderer.render( this.scene, this.camera );
     } );
-  }
-
-  stopAnimation(){
-    renderer.setAnimationLoop( function() {
-      controls.update();
-      renderer.render( scene, camera );
-    } );
-  }
 }

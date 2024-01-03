@@ -9,7 +9,10 @@ const images = [
   '6.png'
 ];
 
-const pocketCube = new PocketCube(undefined, '../images/cube/', images );
+// const pocketCube = new PocketCube(undefined, '../images/cube/', images );
+const pocketCube = new PocketCube();
+pocketCube.setImagesPath('../images/cube/');
+pocketCube.setImages(images);
 pocketCube.init();
 console.log(pocketCube);
 
